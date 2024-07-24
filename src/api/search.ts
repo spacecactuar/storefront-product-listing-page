@@ -129,6 +129,27 @@ const getProductSearch = async ({
   });
 
   const results = await response.json();
+  
+  // ======  start of size reorder =====
+  const out = orderSizes(
+    results.data.productSearch.facets.filter((facet: any) => facet.attribute === 'size')
+  );
+  if (out?.buckets?.length > 0) {
+    const start:any[] = [];
+    const end: any[] = [];
+    results.data.productSearch.facets.forEach( (item: any, index: any) => {
+      if(item.attribute === 'size') {
+        start.push(results.data.productSearch.facets.slice(0, index));
+        end.push(results.data.productSearch.facets.slice(index + 1));
+      }
+    });
+    if (start.length > 0 || end.length > 0) {
+      results.data.productSearch.facets = [];
+      results.data.productSearch.facets.push(...start.flat(), out, ...end.flat());
+    }
+  }
+  // ======  end of size reorder =====
+
   // ======  initialize data collection =====
   updateSearchResultsCtx(
     SEARCH_UNIT_ID,
@@ -150,6 +171,22 @@ const getProductSearch = async ({
 
   return results?.data;
 };
+
+const orderSizes = (sizes: any) => {
+  const values = [
+    'Único', 'U', 'XPP', 'PP', 'P', 'M', 'G', 'GG', 'GG1', 'GG2', 'GG3', 'EGG',
+    '34', '36', '38', '40', '42', '44', '46', '48', '50', '52', '54', '56'
+  ];
+  const maxIndex = values.length;
+  const buckets = sizes[0].buckets.sort((a: any, b: any) => {
+    const aSize = values.indexOf(a.title);
+    const bSize = values.indexOf(b.title);
+    const aIndex = aSize !== -1 ? aSize : maxIndex;
+    const bIndex = bSize !== -1 ? bSize : maxIndex;
+    return aIndex - bIndex;
+  });
+  return { ...sizes[0], buckets };
+}
 
 const getAttributeMetadata = async ({
   environmentId,
