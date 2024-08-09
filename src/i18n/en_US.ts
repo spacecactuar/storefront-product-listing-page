@@ -40,7 +40,7 @@ export const en_US = {
     sortAttributeDESC: '{label}: High to Low',
     sortASC: 'Price: Low to High',
     sortDESC: 'Price: High to Low',
-    productName: 'Product Name',
+    productName: 'Nome do produto',
     productInStock: 'In Stock',
     productLowStock: 'Low Stock',
   },
